@@ -41,3 +41,28 @@ class TodoList:
             if keyword_lower in item["title"].lower():
                 result.append(dict(item))
         return result
+
+    def update(self, item_id, new_title):
+        new_title = new_title.strip() if isinstance(new_title, str) else ""
+        if not new_title:
+            raise ValueError("title tidak boleh kosong")
+
+        for item in self._items:
+            if item["id"] == item_id:
+                item["title"] = new_title
+                return dict(item)
+        raise KeyError(f"todo id {item_id} tidak ditemukan")
+
+    def clear_completed(self):
+        original_count = len(self._items)
+        self._items = [item for item in self._items if not item["done"]]
+        return original_count - len(self._items)
+
+    def stats(self):
+        total = len(self._items)
+        completed = sum(1 for item in self._items if item["done"])
+        return {
+            "total": total,
+            "completed": completed,
+            "pending": total - completed
+        }

@@ -71,6 +71,60 @@ class TestTodoList(unittest.TestCase):
         results = todos.search("")
         self.assertEqual(len(results), 3)
 
+    def test_update_success(self):
+        todos = TodoList()
+        item = todos.add("Old Title")
+        updated = todos.update(item["id"], "New Title")
+        self.assertEqual(updated["title"], "New Title")
+        self.assertEqual(todos.list_all()[0]["title"], "New Title")
+
+    def test_update_invalid_title(self):
+        todos = TodoList()
+        item = todos.add("Some Title")
+        with self.assertRaises(ValueError):
+            todos.update(item["id"], "   ")
+        with self.assertRaises(ValueError):
+            todos.update(item["id"], "")
+        with self.assertRaises(ValueError):
+            todos.update(item["id"], None)
+
+    def test_update_unknown_id(self):
+        todos = TodoList()
+        with self.assertRaises(KeyError):
+            todos.update(999, "New Title")
+
+    def test_clear_completed(self):
+        todos = TodoList()
+        todos.add("Item 1")
+        item2 = todos.add("Item 2")
+        item3 = todos.add("Item 3")
+        todos.complete(item2["id"])
+        todos.complete(item3["id"])
+
+        removed_count = todos.clear_completed()
+        self.assertEqual(removed_count, 2)
+
+        remaining = todos.list_all()
+        self.assertEqual(len(remaining), 1)
+        self.assertEqual(remaining[0]["title"], "Item 1")
+
+        # Calling again should remove 0
+        self.assertEqual(todos.clear_completed(), 0)
+
+    def test_stats(self):
+        todos = TodoList()
+        self.assertEqual(todos.stats(), {"total": 0, "completed": 0, "pending": 0})
+
+        item1 = todos.add("Item 1")
+        todos.add("Item 2")
+        self.assertEqual(todos.stats(), {"total": 2, "completed": 0, "pending": 2})
+
+        todos.complete(item1["id"])
+        self.assertEqual(todos.stats(), {"total": 2, "completed": 1, "pending": 1})
+
+        todos.clear_completed()
+        self.assertEqual(todos.stats(), {"total": 1, "completed": 0, "pending": 1})
+
 
 if __name__ == "__main__":
     unittest.main()
