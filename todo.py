@@ -24,3 +24,20 @@ class TodoList:
                 item["done"] = True
                 return dict(item)
         raise KeyError(f"todo id {item_id} tidak ditemukan")
+
+    def remove(self, item_id):
+        for i, item in enumerate(self._items):
+            if item["id"] == item_id:
+                return dict(self._items.pop(i))
+        raise KeyError(f"todo id {item_id} tidak ditemukan")
+
+    def search(self, keyword):
+        if not keyword:
+            return self.list_all()
+
+        keyword_lower = keyword.lower()
+        result = []
+        for item in self._items:
+            if keyword_lower in item["title"].lower():
+                result.append(dict(item))
+        return result
